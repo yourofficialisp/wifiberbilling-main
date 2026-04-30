@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .logo-container {
+            width: 1754px;
+            height: 361px;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 60px;
+            position: relative;
+        }
+        .logo-main {
+            display: flex;
+            align-items: flex-end;
+            gap: 30px;
+        }
+        /* Signal Bars */
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 18px;
+            height: 200px;
+        }
+        .bar {
+            width: 35px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+        }
+        .bar:nth-child(1) { height: 70px; }
+        .bar:nth-child(2) { height: 110px; }
+        .bar:nth-child(3) { height: 150px; }
+        .bar:nth-child(4) { height: 200px; }
+        
+        /* NBB Text */
+        .nbb-text {
+            font-family: 'Arial', sans-serif;
+            font-size: 160px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+        
+        /* WiFiber Text */
+        .wifiber-text {
+            font-family: 'Arial', sans-serif;
+            font-size: 140px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-left: 20px;
+        }
+        
+        /* WiFi Icon */
+        .wifi-icon {
+            position: relative;
+            width: 120px;
+            height: 100px;
+            margin-left: 40px;
+            margin-bottom: 30px;
+        }
+        .wifi-arc1 {
+            position: absolute;
+            top: 0;
+            left: 10px;
+            width: 100px;
+            height: 50px;
+            border: 6px solid #0ea5e9;
+            border-bottom: none;
+            border-radius: 100px 100px 0 0;
+            background: transparent;
+        }
+        .wifi-arc2 {
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            width: 60px;
+            height: 30px;
+            border: 6px solid #6366f1;
+            border-bottom: none;
+            border-radius: 60px 60px 0 0;
+            background: transparent;
+        }
+        .wifi-dot {
+            position: absolute;
+            bottom: 0;
+            left: 52px;
+            width: 16px;
+            height: 16px;
+            background: #a855f7;
+            border-radius: 50%;
+        }
+        
+        /* Divider Line */
+        .divider {
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(90deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%);
+            margin-top: 20px;
+            margin-left: 0;
+        }
+        
+        /* Bottom Row */
+        .bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+        
+        /* Tagline */
+        .tagline {
+            font-family: 'Arial', sans-serif;
+            font-size: 36px;
+            color: #64748b;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+        
+        /* CyberNet Badge */
+        .cybernet-badge {
+            background: #dc2626;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 32px;
+            font-weight: 600;
+            padding: 12px 35px;
+            border-radius: 12px;
+            letter-spacing: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <div class="logo-main">
+            <div class="signal-bars">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <div class="nbb-text">NBB</div>
+            <div class="wifiber-text">WiFiber</div>
+            <div class="wifi-icon">
+                <div class="wifi-arc1"></div>
+                <div class="wifi-arc2"></div>
+                <div class="wifi-dot"></div>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <div class="bottom-row">
+            <div class="tagline">National Broadband</div>
+            <div class="cybernet-badge">CYBERNET</div>
+        </div>
+    </div>
+</body>
+</html>

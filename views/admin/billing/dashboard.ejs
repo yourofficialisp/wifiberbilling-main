@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Billing - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Admin Mobile Optimizations -->
+    <link href="/css/admin-mobile.css" rel="stylesheet">
+    <link href="/css/mobile-sidebar.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../../partials/billing-sidebar') %>
+
+                <!-- Main content -->
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                    <h3 class="mb-4">Dashboard Billing</h3>
+
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">
+                            <i class="bx bx-speedometer"></i> Statistics & Summary
+                        </h1>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="/admin/billing/monthly-summary" class="btn btn-secondary btn-sm">
+                                <i class="bx bx-calendar"></i><span class="d-none d-md-inline"> Summary</span>
+                            </a>
+                            <a href="/admin/billing/invoices-by-type" class="btn btn-info btn-sm">
+                                <i class="bx bx-receipt"></i><span class="d-none d-md-inline"> Invoice</span>
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button"
+                                    id="moreActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-horizontal-rounded"></i><span class="d-none d-md-inline">
+                                        Others</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreActionsDropdown">
+                                    <li><a class="dropdown-item text-danger" href="#"
+                                            onclick="cleanupVouchers(); return false;">
+                                            <i class="bx bx-trash"></i> Delete Expired Vouchers
+                                        </a></li>
+                                    <li><a class="dropdown-item text-warning" href="#"
+                                            onclick="cleanupData(); return false;">
+                                            <i class="bx bx-refresh"></i> Fix Data
+                                        </a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="/admin/billing/payment-settings">
+                                            <i class="bx bx-cog"></i> Payment Settings
+                                        </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistik Cards -->
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="text-muted fw-normal mt-0" title="Total Customers">Total
+                                                Customers</h5>
+                                            <h3 class="mt-3 mb-3">
+                                                <%= stats.total_customers || 0 %>
+                                            </h3>
+                                            <p class="mb-0 text-muted">
+                                                <span class="text-success me-2">
+                                                    <i class="mdi mdi-arrow-up-bold"></i>
+                                                    <%= stats.active_customers || 0 %>
+                                                </span>
+                                                <span class="text-nowrap">Active</span>
+                                            </p>
+                                        </div>
+                                        <div class="avatar-sm">
+                                            <span class="avatar-title bg-soft-primary rounded">
+                                                <i class="mdi mdi-account-group font-20 text-primary"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="text-muted fw-normal mt-0" title="Monthly Revenue">Monthly
+                                                Revenue</h5>
+                                            <h3 class="mt-3 mb-3">Rs <%= (stats.monthly_revenue ||
+                                                    0).toLocaleString('en-PK') %>
+                                            </h3>
+                                            <p class="mb-0 text-muted">
+                                                <span class="text-success me-2">
+                                                    <i class="mdi mdi-arrow-up-bold"></i>
+                                                    <%= stats.paid_monthly_invoices || 0 %>
+                                                </span>
+                                                <span class="text-nowrap">Paid Invoices</span>
+                                            </p>
+                                        </div>
+                                        <div class="avatar-sm">
+                                            <span class="avatar-title bg-soft-success rounded">
+                                                <i class="mdi mdi-currency-usd font-20 text-success"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="text-muted fw-normal mt-0" title="Voucher Revenue">Voucher
+                                                Revenue</h5>
+                                            <h3 class="mt-3 mb-3">Rs <%= (stats.voucher_revenue ||
+                                                    0).toLocaleString('en-PK') %>
+                                            </h3>
+                                            <p class="mb-0 text-muted">
+                                                <span class="text-info me-2">
+                                                    <i class="mdi mdi-ticket-confirmation"></i>
+                                                    <%= stats.paid_voucher_invoices || 0 %>
+                                                </span>
+                                                <span class="text-nowrap">Paid Vouchers</span>
+                                            </p>
+                                        </div>
+                                        <div class="avatar-sm">
+                                            <span class="avatar-title bg-soft-info rounded">
+                                                <i class="mdi mdi-ticket-confirmation font-20 text-info"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="text-muted fw-normal mt-0" title="Total Revenue">Total Revenue
+                                            </h5>
+                                            <h3 class="mt-3 mb-3">Rs <%= (stats.total_revenue ||
+                                                    0).toLocaleString('en-PK') %>
+                                            </h3>
+                                            <p class="mb-0 text-muted">
+                                                <span class="text-success me-2">
+                                                    <i class="mdi mdi-chart-line"></i>
+                                                    <%= stats.paid_invoices || 0 %>/<%= stats.total_invoices || 0 %>
+                                                </span>
+                                                <span class="text-nowrap">Paid</span>
+                                            </p>
+                                        </div>
+                                        <div class="avatar-sm">
+                                            <span class="avatar-title bg-soft-warning rounded">
+                                                <i class="mdi mdi-receipt font-20 text-warning"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Type Breakdown -->
+                    <div class="row mt-4">
+                        <div class="col-xl-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bx bx-receipt"></i> Monthly Invoices
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <h4 class="text-primary">
+                                                <%= stats.monthly_invoices || 0 %>
+                                            </h4>
+                                            <p class="text-muted mb-0">Total</p>
+                                        </div>
+                                        <div class="col-4">
+                                            <h4 class="text-success">
+                                                <%= stats.paid_monthly_invoices || 0 %>
+                                            </h4>
+                                            <p class="text-muted mb-0">Paid</p>
+                                        </div>
+                                        <div class="col-4">
+                                            <h4 class="text-danger">
+                                                <%= stats.unpaid_monthly_invoices || 0 %>
+                                            </h4>
+                                            <p class="text-muted mb-0">Unpaid</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Revenue:</span>
+                                            <strong class="text-success">Rs <%= (stats.monthly_revenue ||
+                                                    0).toLocaleString('en-PK') %></strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Unpaid:</span>
+                                            <strong class="text-danger">Rs <%= (stats.monthly_unpaid ||
+                                                    0).toLocaleString('en-PK') %></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bx bx-ticket"></i> Voucher Invoices
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <h4 class="text-primary">
+                                                <%= stats.voucher_invoices || 0 %>
+                                            </h4>
+                                            <p class="text-muted mb-0">Total</p>
+                                        </div>
+                                        <div class="col-4">
+                                            <h4 class="text-success">
+                                                <%= stats.paid_voucher_invoices || 0 %>
+                                            </h4>
+                                            <p class="text-muted mb-0">Paid</p>
+                                        </div>
+                                        <div class="col-4">
+                                            <h4 class="text-danger">
+                                                <%= stats.unpaid_voucher_invoices || 0 %>
+                                            </h4>
+                                            <p class="text-muted mb-0">Unpaid</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Revenue:</span>
+                                            <strong class="text-success">Rs <%= (stats.voucher_revenue ||
+                                                    0).toLocaleString('en-PK') %></strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Unpaid:</span>
+                                            <strong class="text-danger">Rs <%= (stats.voucher_unpaid ||
+                                                    0).toLocaleString('en-PK') %></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Recent Invoices -->
+                        <div class="col-xl-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bx bx-receipt"></i> Recent Invoices
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="header-title">Recent Invoices</h4>
+                                        <a href="/admin/billing/invoices" class="btn btn-sm btn-primary">View All</a>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-centered table-nowrap table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Invoice No.</th>
+                                                    <th>Customer</th>
+                                                    <th>Package</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Due Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (recentInvoices && recentInvoices.length> 0) { %>
+                                                    <% recentInvoices.forEach(function(invoice) { %>
+                                                        <tr>
+                                                            <td>
+                                                                <a href="/admin/billing/invoices/<%= invoice.id %>"
+                                                                    class="text-body fw-bold">
+                                                                    <%= invoice.invoice_number %>
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <span class="text-body fw-bold">
+                                                                    <%= invoice.customer_name %>
+                                                                </span>
+                                                                <br>
+                                                                <small class="text-muted">
+                                                                    <%= invoice.customer_phone %>
+                                                                </small>
+                                                            </td>
+                                                            <td>
+                                                                <%= invoice.package_name %>
+                                                            </td>
+                                                            <td>Rs <%=
+                                                                    parseFloat(invoice.amount).toLocaleString('en-PK')
+                                                                    %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (invoice.status==='paid' ) { %>
+                                                                    <span class="badge bg-success">Paid</span>
+                                                                    <% } else if (invoice.status==='unpaid' ) { %>
+                                                                        <% if (new Date(invoice.due_date) < new Date())
+                                                                            { %>
+                                                                            <span
+                                                                                class="badge bg-danger">Overdue</span>
+                                                                            <% } else { %>
+                                                                                <span class="badge bg-warning">Unpaid</span>
+                                                                                <% } %>
+                                                                                    <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <%= new
+                                                                    Date(invoice.due_date).toLocaleDateString('en-PK')
+                                                                    %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="6" class="text-center text-muted">No invoices found</td>
+                                                                </tr>
+                                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Overdue Invoices -->
+                        <div class="col-xl-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bx bx-time"></i> Overdue Invoices
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="header-title">Overdue Invoices</h4>
+                                        <span class="badge bg-danger">
+                                            <%= overdueInvoices.length %>
+                                        </span>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-centered table-nowrap table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Customer</th>
+                                                    <th>Amount</th>
+                                                    <th>Due Date</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (overdueInvoices && overdueInvoices.length> 0) { %>
+                                                    <% overdueInvoices.forEach(function(invoice) { %>
+                                                        <tr>
+                                                            <td>
+                                                                <span class="text-body fw-bold">
+                                                                    <%= invoice.customer_name %>
+                                                                </span>
+                                                                <br>
+                                                                <small class="text-muted">
+                                                                    <%= invoice.customer_phone %>
+                                                                </small>
+                                                            </td>
+                                                            <td>Rs <%=
+                                                                    parseFloat(invoice.amount).toLocaleString('en-PK')
+                                                                    %>
+                                                            </td>
+                                                            <td>
+                                                                <span class="text-danger">
+                                                                    <%= new
+                                                                        Date(invoice.due_date).toLocaleDateString('en-PK')
+                                                                        %>
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="btn-group btn-group-sm" role="group">
+                                                                    <button type="button" class="btn btn-outline-danger"
+                                                                        onclick="suspendCustomer('<%= invoice.username %>')">
+                                                                        <i class="bx bx-block"></i> Suspend
+                                                                    </button>
+                                                                    <button type="button"
+                                                                        class="btn btn-outline-success"
+                                                                        onclick="restoreCustomer('<%= invoice.username %>')">
+                                                                        <i class="bx bx-rotate-left"></i> Restore
+                                                                    </button>
+                                                                    <button type="button"
+                                                                        class="btn btn-outline-secondary"
+                                                                        data-phone="<%= invoice.customer_phone || '' %>"
+                                                                        data-name="<%= invoice.customer_name || '' %>"
+                                                                        data-invoicenumber="<%= invoice.invoice_number || '' %>"
+                                                                        data-amount="<%= invoice.amount || 0 %>"
+                                                                        onclick="sendWaReminderFromBtn(this)">
+                                                                        <i class="bx bx-message-rounded-dots"></i>
+                                                                        Reminder
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="4" class="text-center text-muted">No overdue invoices</td>
+                                                                </tr>
+                                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fungsi toast notification
+        function showToast(type, title, message, duration = 5000) {
+            const toastId = 'toast-' + Date.now();
+            const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-info-circle';
+            const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-primary';
+
+            const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi ${iconClass} me-2"></i>
+                        <strong>${title}</strong><br>
+                        <small>${message}</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+            $('#toast-container').append(toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: duration });
+            toast.show();
+
+            // Auto remove after hide
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        // Auto refresh stats setiap 30 detik
+        setInterval(function () {
+            fetch('/admin/billing/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Update stats cards
+                    document.querySelector('[title="Total Customers"]').nextElementSibling.textContent = data.total_customers || 0;
+                    document.querySelector('[title="Total Revenue"]').nextElementSibling.textContent = 'Rs ' + (data.total_revenue || 0).toLocaleString('en-PK');
+                    document.querySelector('[title="Unpaid Invoices"]').nextElementSibling.textContent = 'Rs ' + (data.total_unpaid || 0).toLocaleString('en-PK');
+                    document.querySelector('[title="Total Invoices"]').nextElementSibling.textContent = data.total_invoices || 0;
+                })
+                .catch(error => {
+                    console.error('Error updating stats:', error);
+                });
+        }, 30000);
+
+        // ====== Actions: Isolir, Restore, Reminder WA ======
+        async function suspendCustomer(username) {
+            const reason = prompt('Enter suspension reason (optional):', 'Late payment');
+            if (reason === null) return; // cancelled
+            try {
+                const res = await fetch(`/admin/billing/service-suspension/suspend/${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('success', 'Suspension Successful', `Customer ${username} has been suspended. ${reason ? 'Reason: ' + reason : ''}`);
+                } else {
+                    showToast('error', 'Suspension Failed', data.message || 'Failed to suspend customer');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('error', 'Error', e.message || 'An error occurred');
+            }
+        }
+
+        async function restoreCustomer(username) {
+            const reason = prompt('Enter restoration reason (optional):', 'Manual restore');
+            if (reason === null) return; // cancelled
+            try {
+                const res = await fetch(`/admin/billing/service-suspension/restore/${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('success', 'Restore Successful', `Customer ${username} has been restored. ${reason ? 'Reason: ' + reason : ''}`);
+                } else {
+                    showToast('error', 'Restore Failed', data.message || 'Failed to restore customer');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('error', 'Error', e.message || 'An error occurred');
+            }
+        }
+
+        function sendWaReminder(phone, name, invoiceNumber, amount) {
+            if (!phone) {
+                showToast('error', 'Number unavailable', 'Customer WhatsApp number is empty.');
+                return;
+            }
+            const rupiah = (() => {
+                const n = parseFloat(amount || 0);
+                if (isNaN(n)) return '0';
+                return n.toLocaleString('en-PK');
+            })();
+            const text = `Hello ${name}, this is a reminder for your invoice${invoiceNumber ? ' #' + invoiceNumber : ''} of Rp ${rupiah}. Please make the payment as soon as possible. Thank you.`;
+            const url = `https://wa.me/${encodeURIComponent(phone)}?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        // Helper agar onclick tidak mengandung ekspresi kompleks EJS
+        function sendWaReminderFromBtn(btn) {
+            const phone = btn.getAttribute('data-phone') || '';
+            const name = btn.getAttribute('data-name') || '';
+            const invoiceNumber = btn.getAttribute('data-invoicenumber') || '';
+            const amount = btn.getAttribute('data-amount') || 0;
+            sendWaReminder(phone, name, invoiceNumber, amount);
+        }
+    </script>
+
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to clean up consistency data
+        async function cleanupData() {
+            const btn = document.getElementById('cleanupDataBtn');
+            const originalText = btn.innerHTML;
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Fixing...';
+
+            try {
+                const response = await fetch('/admin/billing/api/cleanup-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success message
+                    showAlert('success', 'Success!', result.message);
+
+                    // Reload page after 2 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showAlert('danger', 'Error!', result.message);
+                }
+            } catch (error) {
+                showAlert('danger', 'Error!', 'Failed to fix data: ' + error.message);
+            } finally {
+                // Restore button
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Function to clean up expired vouchers
+        async function cleanupVouchers() {
+            const btn = document.getElementById('cleanupVoucherBtn');
+            const originalText = btn.innerHTML;
+
+            // Confirm before deleting
+            if (!confirm('Are you sure you want to delete expired voucher invoices? This action cannot be undone!')) {
+                return;
+            }
+
+            // Disable button dan show loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Deleting...';
+
+            try {
+                const response = await fetch('/admin/billing/api/voucher-cleanup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success message with details
+                    let message = result.message;
+                    if (result.cleaned > 0) {
+                        message += ` (${result.cleaned} invoice(s) deleted)`;
+                    }
+                    showAlert('success', 'Success!', message);
+
+                    // Reload page after 2 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showAlert('danger', 'Error!', result.message);
+                }
+            } catch (error) {
+                showAlert('danger', 'Error!', 'Failed to delete expired vouchers: ' + error.message);
+            } finally {
+                // Restore button
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Function to display alert
+        function showAlert(type, title, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <strong>${title}:</strong> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            // Insert alert di atas content
+            const mainContent = document.querySelector('.main-content');
+            const firstChild = mainContent.firstElementChild;
+            firstChild.insertAdjacentHTML('afterend', alertHtml);
+
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+
+        // Auto refresh stats setiap 30 detik
+        setInterval(async () => {
+            try {
+                const response = await fetch('/admin/billing/api/stats');
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update stats without reloading page
+                    updateStatsDisplay(result.data);
+                }
+            } catch (error) {
+                console.log('Auto refresh stats failed:', error);
+            }
+        }, 30000);
+
+        // Function to update stats display
+        function updateStatsDisplay(stats) {
+            // Update total customers
+            const totalCustomersEl = document.querySelector('h3:contains("Total Customers")');
+            if (totalCustomersEl) {
+                totalCustomersEl.textContent = stats.total_customers || 0;
+            }
+
+            // Update active customers
+            const activeCustomersEl = document.querySelector('.text-success .mdi-arrow-up-bold');
+            if (activeCustomersEl) {
+                activeCustomersEl.nextElementSibling.textContent = stats.active_customers || 0;
+            }
+
+            // Update total revenue
+            const totalRevenueEl = document.querySelector('h3:contains("Total Revenue")');
+            if (totalRevenueEl) {
+                totalRevenueEl.textContent = 'Rs ' + (stats.total_revenue || 0).toLocaleString('en-PK');
+            }
+
+            // Update unpaid amount
+            const unpaidAmountEl = document.querySelector('h3:contains("Unpaid Invoices")');
+            if (unpaidAmountEl) {
+                unpaidAmountEl.textContent = 'Rs ' + (stats.total_unpaid || 0).toLocaleString('en-PK');
+            }
+
+            // Update total invoices
+            const totalInvoicesEl = document.querySelector('h3:contains("Total Invoices")');
+            if (totalInvoicesEl) {
+                totalInvoicesEl.textContent = stats.total_invoices || 0;
+            }
+        }
+    </script>
+
+    <!-- Mobile Bottom Navbar -->
+    <%- include('../../partials/admin-mobile-navbar', { currentPage: 'dashboard' }) %>
+</body>
+
+</html>

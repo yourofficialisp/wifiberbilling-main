@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Trouble Report Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; padding: 30px; }
+        .result-box { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0001; padding: 20px; margin-top: 20px; }
+        .form-label { font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 500px;">
+        <h2 class="mb-4">Simple Trouble Report Form</h2>
+        <form id="simpleTroubleForm">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Phone Number</label>
+                <input type="text" class="form-control" id="phone" name="phone" value="" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location" value="" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Problem Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="">Select category</option>
+                    <option value="Slow Internet">Slow Internet</option>
+                    <option value="Cannot Browse">Cannot Browse</option>
+                    <option value="WiFi Not Visible">WiFi Not Visible</option>
+                    <option value="Intermittent Connection">Intermittent Connection</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Problem Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+        </form>
+        <div id="resultBox" class="result-box d-none"></div>
+        <div id="backBtnBox" class="d-none mt-3 text-center">
+            <a href="/customer/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('simpleTroubleForm');
+        const resultBox = document.getElementById('resultBox');
+        const backBtnBox = document.getElementById('backBtnBox');
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            resultBox.classList.add('d-none');
+            backBtnBox.classList.add('d-none');
+            resultBox.innerHTML = '';
+            const data = {
+                name: form.name.value,
+                phone: form.phone.value,
+                location: form.location.value,
+                category: form.category.value,
+                description: form.description.value
+            };
+            if (!data.category || !data.description) {
+                resultBox.innerHTML = '<div class="alert alert-warning">Category and description are required.</div>';
+                resultBox.classList.remove('d-none');
+                backBtnBox.classList.remove('d-none');
+                return;
+            }
+            // Try POST to /customer/trouble/report
+            let response, json;
+            try {
+                response = await fetch('/customer/trouble/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    json = await response.json();
+                } else {
+                    throw new Error('Not JSON, possibly invalid session');
+                }
+            } catch (err) {
+                // Fallback to GET /customer/trouble/test
+                try {
+                    const params = new URLSearchParams(data);
+                    response = await fetch('/customer/trouble/test?' + params.toString());
+                    json = await response.json();
+                } catch (err2) {
+                    resultBox.innerHTML = '<div class="alert alert-danger">Failed to send report. Please try again.</div>';
+                    resultBox.classList.remove('d-none');
+                    backBtnBox.classList.remove('d-none');
+                    return;
+                }
+            }
+            if (json && json.success) {
+                resultBox.innerHTML = `<div class="alert alert-success">${json.message}<br><b>Ticket ID:</b> ${json.reportId}<br><small>You will be redirected to dashboard in 3 seconds...</small></div>`;
+                setTimeout(() => { window.location.href = '/customer/dashboard'; }, 3000);
+            } else {
+                resultBox.innerHTML = `<div class="alert alert-danger">${json && json.message ? json.message : 'Failed to send report.'}</div>`;
+            }
+            resultBox.classList.remove('d-none');
+            backBtnBox.classList.remove('d-none');
+        });
+    </script>
+</body>
+</html> 

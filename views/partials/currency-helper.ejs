@@ -1,0 +1,59 @@
+<!-- Currency Helper Functions -->
+<script>
+// Format currency without decimals (removes .00)
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return 'Rs 0';
+    
+    // Parse amount and convert to integer (remove decimals)
+    const numAmount = Math.round(parseFloat(amount));
+    
+    // Format with thousand separator, no decimals
+    return 'Rs ' + numAmount.toLocaleString('en-PK');
+}
+
+// Format currency for input and display
+function formatCurrencyInput(amount) {
+    if (!amount && amount !== 0) return '0';
+    
+    // Parse amount and convert to integer (remove decimals)
+    const numAmount = Math.round(parseFloat(amount));
+    
+    // Format with thousand separator, no decimals
+    return numAmount.toLocaleString('en-PK');
+}
+
+// Parse currency from string to number
+function parseCurrency(currencyString) {
+    if (!currencyString) return 0;
+    
+    // Remove "Rp " and thousand separators, then parse to number
+    const cleanString = currencyString.replace(/[^\d]/g, '');
+    return parseInt(cleanString) || 0;
+}
+
+// Update all elements with class currency-format
+function updateAllCurrencyFormats() {
+    document.querySelectorAll('.currency-format').forEach(element => {
+        const amount = parseFloat(element.dataset.amount || element.textContent.replace(/[^\d]/g, ''));
+        if (!isNaN(amount)) {
+            element.textContent = formatCurrency(amount);
+        }
+    });
+}
+
+// Update all elements with class currency-input
+function updateAllCurrencyInputs() {
+    document.querySelectorAll('.currency-input').forEach(element => {
+        const amount = parseFloat(element.dataset.amount || element.value.replace(/[^\d]/g, ''));
+        if (!isNaN(amount)) {
+            element.value = formatCurrencyInput(amount);
+        }
+    });
+}
+
+// Auto-format when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateAllCurrencyFormats();
+    updateAllCurrencyInputs();
+});
+</script>

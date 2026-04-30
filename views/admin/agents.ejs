@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Agents - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .agent-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #28a745;
+            transition: all 0.3s ease;
+        }
+
+        .agent-item:hover {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .agent-item.inactive {
+            border-left-color: #dc3545;
+        }
+
+        .agent-item.suspended {
+            border-left-color: #ffc107;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .balance-request {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 1rem;
+            border: 2px solid #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #ffc107, #ff8c00);
+            color: white;
+        }
+
+        .status-approved {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .status-rejected {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+        }
+
+        .agent-card {
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            border-left-color: #28a745;
+            transform: translateX(5px);
+        }
+
+        .btn-action {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            border: none;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../partials/admin-responsive-sidebar', { page: 'agents' , settings: typeof settings
+                !=='undefined' ? settings : {} }) %>
+
+                <!-- Main Content -->
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                    <!-- Header -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h2>
+                                <i class="fas fa-user-tie me-2"></i>
+                                Manage Agents
+                            </h2>
+                            <p class="text-muted">Agent management and their balances</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="btn-group">
+                                <a href="/admin/voucher-pricing" class="btn btn-success">
+                                    <i class="fas fa-dollar-sign me-2"></i>
+                                    Voucher Prices
+                                </a>
+                                <button class="btn btn-warning" data-bs-toggle="modal"
+                                    data-bs-target="#addBalanceModal">
+                                    <i class="fas fa-plus-circle me-2"></i>
+                                    Add Balance
+                                </button>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAgentModal">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Add Agent
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs mb-4" id="agentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="agents-tab" data-bs-toggle="tab"
+                                data-bs-target="#agents-content" type="button" role="tab">
+                                <i class="fas fa-users me-2"></i>Agent List
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="registrations-tab" data-bs-toggle="tab"
+                                data-bs-target="#registrations-content" type="button" role="tab">
+                                <i class="fas fa-user-plus me-2"></i>Agent Registration
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="agentTabContent">
+                        <!-- Agents List Tab -->
+                        <div class="tab-pane fade show active" id="agents-content" role="tabpanel">
+                            <!-- Balance Requests -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-money-bill-wave me-2"></i>
+                                        Agent Balance Requests
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="balanceRequests">
+                                        <!-- Balance requests will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Agents List -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i>
+                                        Agent List
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="agentsList">
+                                        <!-- Agents will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Registrations Tab -->
+                        <div class="tab-pane fade" id="registrations-content" role="tabpanel">
+                            <!-- Stats Cards -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card stats-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-clock fa-2x mb-2"></i>
+                                            <h4 id="pendingCount">0</h4>
+                                            <p class="mb-0">Waiting Approval</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stats-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                            <h4 id="approvedCount">0</h4>
+                                            <p class="mb-0">Approved</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stats-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                            <h4 id="rejectedCount">0</h4>
+                                            <p class="mb-0">Rejected</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stats-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-users fa-2x mb-2"></i>
+                                            <h4 id="totalCount">0</h4>
+                                            <p class="mb-0">Total Registrations</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filter Tabs -->
+                            <ul class="nav nav-tabs mb-4" id="statusTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab"
+                                        data-bs-target="#pending" type="button" role="tab">
+                                        <i class="fas fa-clock me-1"></i>Waiting Approval
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="approved-tab" data-bs-toggle="tab"
+                                        data-bs-target="#approved" type="button" role="tab">
+                                        <i class="fas fa-check-circle me-1"></i>Approved
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="rejected-tab" data-bs-toggle="tab"
+                                        data-bs-target="#rejected" type="button" role="tab">
+                                        <i class="fas fa-times-circle me-1"></i>Rejected
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab Content -->
+                            <div class="tab-content" id="statusTabContent">
+                                <!-- Pending Registrations -->
+                                <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                                    <div class="row" id="pendingAgents">
+                                        <!-- Pending agents will be loaded here -->
+                                    </div>
+                                </div>
+
+                                <!-- Approved Registrations -->
+                                <div class="tab-pane fade" id="approved" role="tabpanel">
+                                    <div class="row" id="approvedAgents">
+                                        <!-- Approved agents will be loaded here -->
+                                    </div>
+                                </div>
+
+                                <!-- Rejected Registrations -->
+                                <div class="tab-pane fade" id="rejected" role="tabpanel">
+                                    <div class="row" id="rejectedAgents">
+                                        <!-- Rejected agents will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+        </div>
+    </div>
+
+    <!-- Add Agent Modal -->
+    <div class="modal fade" id="addAgentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Add New Agent
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAgentForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="agentUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="agentUsername" name="username" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="agentName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="agentName" name="name" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="agentPhone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="agentPhone" name="phone" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="agentEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="agentEmail" name="email">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="agentAddress" class="form-label">Address</label>
+                            <textarea class="form-control" id="agentAddress" name="address" rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="agentPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="agentPassword" name="password" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="agentCommission" class="form-label">Commission (%)</label>
+                                <input type="number" class="form-control" id="agentCommission" name="commission_rate"
+                                    value="5" min="0" max="100" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+    <!-- Edit Agent Modal -->
+    <div class="modal fade" id="editAgentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Edit Agent
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAgentForm">
+                        <input type="hidden" id="editAgentId" name="id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="editUsername" name="username" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="editName" name="name" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editPhone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="editPhone" name="phone" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail" name="email">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editAddress" class="form-label">Address</label>
+                            <textarea class="form-control" id="editAddress" name="address" rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editPassword" class="form-label">New Password (leave blank if not changed)</label>
+                                <input type="password" class="form-control" id="editPassword" name="password">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-select" id="editStatus" name="status" required>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateAgent()">
+                        <i class="fas fa-save me-2"></i>
+                        Update Agent
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Balance Modal -->
+    <div class="modal fade" id="addBalanceModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Add Agent Balance
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBalanceForm">
+                        <div class="mb-3">
+                            <label for="balanceAgentSelect" class="form-label">Select Agent</label>
+                            <select class="form-select" id="balanceAgentSelect" name="agentId" required>
+                                <option value="">-- Select Agent --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="balanceAmount" class="form-label">Balance Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" class="form-control" id="balanceAmount" name="amount" min="1000"
+                                    step="1000" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="balanceNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="balanceNotes" name="notes" rows="3"
+                                placeholder="Example: Initial deposit, performance bonus, etc."></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Info:</strong> Balance will be added directly to the agent's account and transaction will be recorded in history.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="addBalance()">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Add Balance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve Balance Request Modal -->
+    <div class="modal fade" id="approveRequestModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check me-2"></i>
+                        Approve Balance Request
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="approveRequestForm">
+                        <input type="hidden" id="requestId" name="requestId">
+                        <div class="mb-3">
+                            <label for="adminNotes" class="form-label">Admin Notes</label>
+                            <textarea class="form-control" id="adminNotes" name="adminNotes" rows="3"
+                                placeholder="Notes for agent..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="approveRequest()">
+                        <i class="fas fa-check me-2"></i>
+                        Approve Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Balance Request Modal -->
+    <div class="modal fade" id="rejectRequestModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-times me-2"></i>
+                        Reject Balance Request
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rejectRequestForm">
+                        <input type="hidden" id="rejectRequestId" name="requestId">
+                        <div class="mb-3">
+                            <label for="rejectReason" class="form-label">Rejection Reason</label>
+                            <textarea class="form-control" id="rejectReason" name="rejectReason" rows="3"
+                                placeholder="Explain rejection reason..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="rejectRequest()">
+                        <i class="fas fa-times me-2"></i>
+                        Reject Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Action Modal -->
+    <div class="modal fade" id="registrationActionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registrationActionTitle">Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="registrationActionBody">
+                        <!-- Modal content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmRegistrationAction">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load balance requests
+        function loadBalanceRequests() {
+            fetch('/admin/agents/balance-requests')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayBalanceRequests(data.requests);
+                    }
+                })
+                .catch(error => console.error('Error loading balance requests:', error));
+        }
+
+        // Load agents
+        function loadAgents() {
+            fetch('/admin/agents/list')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.agentsData = data.agents; // Store agents data globally
+                        displayAgents(data.agents);
+                        populateAgentDropdown(); // Populate dropdown for balance modal
+                    }
+                })
+                .catch(error => console.error('Error loading agents:', error));
+        }
+
+        // Display balance requests
+        function displayBalanceRequests(requests) {
+            const container = document.getElementById('balanceRequests');
+
+            if (requests.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-inbox fa-2x mb-2"></i><p>No balance requests</p></div>';
+                return;
+            }
+
+            container.innerHTML = requests.map(request => `
+                <div class="balance-request">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-1">${request.agent_name}</h6>
+                            <p class="mb-1 text-muted">Phone: ${request.agent_phone}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                ${new Date(request.requested_at).toLocaleString('en-US')}
+                            </small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5 class="mb-0 text-primary">Rp ${(request.amount || 0).toLocaleString('en-US')}</h5>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <button class="btn btn-success btn-sm me-2" onclick="showApproveModal(${request.id})">
+                                <i class="fas fa-check me-1"></i>Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="showRejectModal(${request.id})">
+                                <i class="fas fa-times me-1"></i>Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display agents
+        function displayAgents(agents) {
+            const container = document.getElementById('agentsList');
+
+            if (agents.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-users fa-2x mb-2"></i><p>No agents</p></div>';
+                return;
+            }
+
+            container.innerHTML = agents.map(agent => `
+                <div class="agent-item ${agent.status}">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-1">${agent.name}</h6>
+                            <p class="mb-1 text-muted">Username: ${agent.username} • Phone: ${agent.phone}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                Joined: ${new Date(agent.created_at).toLocaleDateString('en-US')}
+                            </small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h6 class="mb-1">Balance</h6>
+                            <h5 class="mb-0 text-primary">Rp ${(agent.balance || 0).toLocaleString('en-US')}</h5>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <span class="badge bg-${agent.status === 'active' ? 'success' : agent.status === 'inactive' ? 'danger' : 'warning'} mb-2">
+                                ${agent.status === 'active' ? 'Active' : agent.status === 'inactive' ? 'Inactive' : 'Suspended'}
+                            </span>
+                            <br>
+                              <div class="btn-group" role="group">
+                                  <a href="/admin/agents/${agent.id}" class="btn btn-outline-primary btn-sm">
+                                      <i class="fas fa-eye me-1"></i>Detail
+                                  </a>
+                                  <button class="btn btn-outline-warning btn-sm" onclick="editAgent(${agent.id})">
+                                      <i class="fas fa-edit me-1"></i>Edit
+                                  </button>
+                                  <button class="btn btn-outline-${agent.status === 'active' ? 'danger' : 'success'} btn-sm" onclick="toggleAgentStatus(${agent.id}, '${agent.status}')">
+                                      <i class="fas fa-${agent.status === 'active' ? 'pause' : 'play'} me-1"></i>${agent.status === 'active' ? 'Deactivate' : 'Activate'}
+                                  </button>
+                                  <button class="btn btn-outline-danger btn-sm" onclick="deleteAgent(${agent.id}, '${agent.name}')">
+                                      <i class="fas fa-trash me-1"></i>Delete
+                                  </button>
+                              </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add agent
+        function addAgent() {
+            const form = document.getElementById('addAgentForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            fetch('/admin/agents/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Agent successfully added!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding agent');
+                });
+        }
+
+        // Show approve modal
+        function showApproveModal(requestId) {
+            document.getElementById('requestId').value = requestId;
+            const modal = new bootstrap.Modal(document.getElementById('approveRequestModal'));
+            modal.show();
+        }
+
+        // Show reject modal
+        function showRejectModal(requestId) {
+            document.getElementById('rejectRequestId').value = requestId;
+            const modal = new bootstrap.Modal(document.getElementById('rejectRequestModal'));
+            modal.show();
+        }
+
+        // Approve request
+        function approveRequest() {
+            const requestId = document.getElementById('requestId').value;
+            const adminNotes = document.getElementById('adminNotes').value;
+
+            fetch('/admin/agents/approve-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ requestId, adminNotes })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Request successfully approved!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while approving request');
+                });
+        }
+
+        // Reject request
+        function rejectRequest() {
+            const requestId = document.getElementById('rejectRequestId').value;
+            const rejectReason = document.getElementById('rejectReason').value;
+
+            if (!rejectReason.trim()) {
+                alert('Rejection reason must be filled!');
+                return;
+            }
+
+            fetch('/admin/agents/reject-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ requestId, rejectReason })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Request successfully rejected!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while rejecting request');
+                });
+        }
+
+        // Edit agent
+        function editAgent(agentId) {
+            // Get agent data and populate form
+            fetch(`/admin/agents/${agentId}/details`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Populate edit form
+                        document.getElementById('editAgentId').value = data.agent.id;
+                        document.getElementById('editUsername').value = data.agent.username;
+                        document.getElementById('editName').value = data.agent.name;
+                        document.getElementById('editPhone').value = data.agent.phone;
+                        document.getElementById('editEmail').value = data.agent.email || '';
+                        document.getElementById('editAddress').value = data.agent.address || '';
+                        document.getElementById('editStatus').value = data.agent.status;
+
+                        // Show edit modal
+                        const modal = new bootstrap.Modal(document.getElementById('editAgentModal'));
+                        modal.show();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while loading agent data');
+                });
+        }
+
+        // Toggle agent status
+        function toggleAgentStatus(agentId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            const action = newStatus === 'active' ? 'activate' : 'deactivate';
+
+            if (confirm(`Are you sure you want to ${action} this agent?`)) {
+                fetch(`/admin/agents/${agentId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`Agent successfully ${action}!`);
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while changing agent status');
+                    });
+            }
+        }
+
+        // Update agent
+        function updateAgent() {
+            const form = document.getElementById('editAgentForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            // Remove empty password field
+            if (!data.password) {
+                delete data.password;
+            }
+
+            fetch('/admin/agents/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Agent successfully updated!');
+                        location.reload();
+                    } else {
+            const form = document.getElementById('addBalanceForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            if (!data.agentId || !data.amount) {
+                alert('Please fill all required fields!');
+                return;
+            }
+
+            if (parseInt(data.amount) < 1000) {
+                alert('Balance amount must be at least Rp 1,000!');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to add balance Rp ${parseInt(data.amount).toLocaleString()} to this agent?`)) {
+                fetch('/admin/agents/add-balance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Balance added successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error adding balance');
+                    });
+            }
+        }
+
+        // Populate agent dropdown for balance modal
+        function populateAgentDropdown() {
+            const select = document.getElementById('balanceAgentSelect');
+
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">-- Select Agent --</option>';
+
+            // Add agents from the current page data
+            if (window.agentsData) {
+                window.agentsData.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.id;
+                    option.textContent = `${agent.name} (${agent.username}) - Balance: Rp ${(agent.balance || 0).toLocaleString()}`;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // View agent details
+        function viewAgentDetails(agentId) {
+            // Implement agent details view
+            alert('Agent details feature will be available soon!');
+        }
+
+        // Delete agent
+        function deleteAgent(agentId, agentName) {
+            if (confirm(`Are you sure you want to delete agent "${agentName}"?\n\n⚠️ WARNING: This action will delete:\n- Agent data\n- Agent balance\n- Transaction history\n- Voucher sales data\n\nThis action CANNOT BE UNDONE!`)) {
+                fetch(`/admin/agents/${agentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Agent deleted successfully!');
+                            loadAgents(); // Reload agents list
+                        } else {
+                            alert('Failed to delete agent: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting agent:', error);
+                        alert('Error deleting agent');
+                    });
+            }
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadBalanceRequests();
+            loadAgents();
+            loadAgentRegistrations();
+        });
+
+        // Auto refresh every 30 seconds
+        setInterval(function () {
+            loadBalanceRequests();
+            loadAgents();
+            loadAgentRegistrations();
+        }, 30000);
+
+        // Load agent registrations
+        async function loadAgentRegistrations() {
+            try {
+                const response = await fetch('/admin/api/agent-registrations');
+                const data = await response.json();
+
+                if (data.success) {
+                    displayRegistrations(data.agents);
+                    updateRegistrationStats(data.stats);
+                } else {
+                    console.error('Error loading agent registrations:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading agent registrations:', error);
+            }
+        }
+
+        // Display registrations by status
+        function displayRegistrations(agents) {
+            const pendingContainer = document.getElementById('pendingAgents');
+            const approvedContainer = document.getElementById('approvedAgents');
+            const rejectedContainer = document.getElementById('rejectedAgents');
+
+            if (pendingContainer) pendingContainer.innerHTML = '';
+            if (approvedContainer) approvedContainer.innerHTML = '';
+            if (rejectedContainer) rejectedContainer.innerHTML = '';
+
+            agents.forEach(agent => {
+                const agentCard = createRegistrationCard(agent);
+
+                if (agent.status === 'pending' && pendingContainer) {
+                    pendingContainer.appendChild(agentCard);
+                } else if (agent.status === 'active' && approvedContainer) {
+                    approvedContainer.appendChild(agentCard);
+                } else if (agent.status === 'rejected' && rejectedContainer) {
+                    rejectedContainer.appendChild(agentCard);
+                }
+            });
+        }
+
+        // Create registration card
+        function createRegistrationCard(agent) {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4 mb-3';
+
+            const statusClass = agent.status === 'pending' ? 'status-pending' :
+                agent.status === 'active' ? 'status-approved' : 'status-rejected';
+
+            const statusText = agent.status === 'pending' ? 'Waiting for Approval' :
+                agent.status === 'active' ? 'Approved' : 'Rejected';
+
+            col.innerHTML = `
+                <div class="card agent-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="card-title mb-1">${agent.name}</h6>
+                                <small class="text-muted">@${agent.username}</small>
+                            </div>
+                            <span class="badge ${statusClass}">${statusText}</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="mb-1"><i class="fas fa-phone me-2"></i>${agent.phone}</p>
+                            ${agent.email ? `<p class="mb-1"><i class="fas fa-envelope me-2"></i>${agent.email}</p>` : ''}
+                            <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>${agent.address}</p>
+                            <p class="mb-0"><i class="fas fa-calendar me-2"></i>${new Date(agent.created_at).toLocaleDateString('en-PK')}</p>
+                        </div>
+
+                        ${agent.status === 'pending' ? `
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-approve btn-action" onclick="showRegistrationActionModal(${agent.id}, 'approve')">
+                                    <i class="fas fa-check me-1"></i>Approve
+                                </button>
+                                <button class="btn btn-reject btn-action" onclick="showRegistrationActionModal(${agent.id}, 'reject')">
+                                    <i class="fas fa-times me-1"></i>Reject
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            return col;
+        }
+
+        // Update registration stats
+        function updateRegistrationStats(stats) {
+            if (document.getElementById('pendingCount')) {
+                document.getElementById('pendingCount').textContent = stats.pending || 0;
+            }
+            if (document.getElementById('approvedCount')) {
+                document.getElementById('approvedCount').textContent = stats.approved || 0;
+            }
+            if (document.getElementById('rejectedCount')) {
+                document.getElementById('rejectedCount').textContent = stats.rejected || 0;
+            }
+            if (document.getElementById('totalCount')) {
+                document.getElementById('totalCount').textContent = stats.total || 0;
+            }
+        }
+
+        // Show registration action modal
+        let currentRegistrationId = null;
+        let currentRegistrationAction = null;
+
+        function showRegistrationActionModal(agentId, action) {
+            currentRegistrationId = agentId;
+            currentRegistrationAction = action;
+
+            const modal = new bootstrap.Modal(document.getElementById('registrationActionModal'));
+            const title = document.getElementById('registrationActionTitle');
+            const body = document.getElementById('registrationActionBody');
+            const confirmBtn = document.getElementById('confirmRegistrationAction');
+
+            if (action === 'approve') {
+                title.textContent = 'Approve Agent Registration';
+                body.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Confirmation of Approval</strong><br>
+                        Agent will be able to login and start transactions after being approved.
+                    </div>
+                    <p>Are you sure you want to approve this agent registration?</p>
+                `;
+                confirmBtn.className = 'btn btn-success';
+                confirmBtn.innerHTML = '<i class="fas fa-check me-1"></i>Approve';
+            } else {
+                title.textContent = 'Reject Agent Registration';
+                body.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Confirmation of Rejection</strong><br>
+                        Agent will not be able to login and will have to re-register.
+                    </div>
+                    <div class="mb-3">
+                        <label for="registrationRejectReason" class="form-label">Rejection Reason (Optional)</label>
+                        <textarea class="form-control" id="registrationRejectReason" rows="3" placeholder="Enter rejection reason..."></textarea>
+                    </div>
+                `;
+                confirmBtn.className = 'btn btn-danger';
+                confirmBtn.innerHTML = '<i class="fas fa-times me-1"></i>Reject';
+            }
+
+            modal.show();
+        }
+
+        // Confirm registration action
+        document.getElementById('confirmRegistrationAction').addEventListener('click', async function () {
+            if (currentRegistrationAction === 'approve') {
+                await approveRegistration(currentRegistrationId);
+            } else if (currentRegistrationAction === 'reject') {
+                const reason = document.getElementById('registrationRejectReason').value;
+                await rejectRegistration(currentRegistrationId, reason);
+            }
+        });
+
+        // Approve registration
+        async function approveRegistration(agentId) {
+            try {
+                const response = await fetch(`/admin/api/agent-registrations/${agentId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Agent successfully approved!');
+                    bootstrap.Modal.getInstance(document.getElementById('registrationActionModal')).hide();
+                    loadAgentRegistrations();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error approving agent:', error);
+                alert('Error approving agent');
+            }
+        }
+
+        // Reject registration
+        async function rejectRegistration(agentId, reason) {
+            try {
+                const response = await fetch(`/admin/api/agent-registrations/${agentId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Agent successfully rejected!');
+                    bootstrap.Modal.getInstance(document.getElementById('registrationActionModal')).hide();
+                    loadAgentRegistrations();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error rejecting agent:', error);
+                alert('Error rejecting agent');
+            }
+        }
+    </script>
+</body>
+
+</html>
